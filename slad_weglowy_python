@@ -1,0 +1,92 @@
+#pomocne linki: 
+#https://medium.com/how-to-use-google-distance-matrix-api-in-python/how-to-use-google-distance-matrix-api-in-python-ef9cd895303c
+
+#w pierwszej kolejnosci -> jezeli nie ma modułu googlemaps >> nalezy zainstalowac!!
+#!pip install googlemaps
+
+#-------------------------Biblioteki: 
+import openpyxl
+import pandas as pd
+import googlemaps
+from datetime import datetime 
+import requests, json
+
+#-------------------------Ustawienia Google Maps: 
+#parametr API KEY:
+#API KEY jest dostępny w ramach usługi Google Cloud i wymaga pobrania API KEY do uruchominia skryptu!!!
+gmaps_client = googlemaps.Client(key = 'TUTAJ KOD KLUCZA GOOGLE MAPS')
+
+
+#-------------------------Praca na pliku: 
+#Otworzenie pliku excela z danymi:
+wb = openpyxl.load_workbook('dane_slad_weglowy.xlsx')
+ws = wb['Arkusz1']
+
+#testowanie działania i odczytywanie liczby wierszy i kolumn: 
+print('Liczba wierszy: ' + str(ws.max_row)+' i liczba kolumn: ' + str(ws.max_column))
+#odczytywanie kolejnych pól: 
+#print('Wartosc w polu A1 jest: ' + ws['A1'].value)
+row_limit = ws.max_row
+column_limit = ws.max_column
+
+#-------------------------Zmienne: 
+v_lista = list()
+nroperacji = 1
+zrobione = ""
+adres_od = ""
+dystans = 0
+auto_distance_in_meters = ""
+auto_time_taken = ""
+km_distance_in_meters = ""
+km_time_taken = ""
+
+#-------------------------Spis istotnych kolumn i ich numeracja: 
+#DODATKOWA = 2
+#ADRES_OD = 3
+#ADRES_DO = 4
+#ZROBIONE = 5
+#DATA_CZAS_SPRAWDZENIA_WIERSZA = 6
+#KILOMETRY_PUBLICZNY = 7
+#CZAS_PUBLICZNY = 8
+#KILOMETRY_AUTO = 9
+#CZAS_AUTO = 10
+
+#-------------------------Pętla wykonawcza:  #range (0, row_limit):
+for x in ws: 
+    adres_od = ws.cell(row=nroperacji, column = 3).value
+    adres_do = ws.cell(row=nroperacji, column = 4).value
+    zrobione = ws.cell(row=nroperacji, column = 6).value 
+    source = adres_od 
+    destination = adres_do
+    now = datetime.now()
+    if zrobione == "T":
+        print("zrobione - tego nie procesować")
+    else: 
+        #print("nie zrobione - do zrobienia: " + zrobione + " adres od: " + source + " adres do: " + destination)
+        auto_resultmatrix = gmaps_client.distance_matrix(source, destination, mode = "driving")['rows'][0]['elements'][0]
+        km_resultmatrix = gmaps_client.distance_matrix(source, destination, mode = "transit")['rows'][0]['elements'][0]
+        if auto_resultmatrix["status"] == 'OK':
+            print("wydruk auto_resultmatrix")
+            print(auto_resultmatrix)
+            auto_distance_in_meters = auto_resultmatrix["distance"]["text"]        
+            auto_time_taken = auto_resultmatrix["duration"]["text"] 
+            
+        if km_resultmatrix["status"] == 'OK':
+        #--JEZELI WARTOSCI DLA KOMUNIKACJI MIEJSKIEJ SA ODNALEZIONE >> PROCESOWANIE DANYCH I ZAPIS DO POZYCJI PLIKU:
+            print("wydruk km_resultmatrix")
+            print(km_resultmatrix)
+            km_distance_in_meters = km_resultmatrix["distance"]["text"]        
+            km_time_taken = km_resultmatrix["duration"]["text"] 
+
+    ws.cell(row=nroperacji, column=9, value = auto_distance_in_meters)
+    ws.cell(row=nroperacji, column=10, value = auto_time_taken)
+    ws.cell(row=nroperacji, column=7, value = km_distance_in_meters)
+    ws.cell(row=nroperacji, column=8, value = km_time_taken)           
+    ws.cell(row=nroperacji, column=5, value = 'T')
+    ws.cell(row=nroperacji, column=6, value = now)
+    ws.cell(row=nroperacji, column=2, value = nroperacji)
+    nroperacji = nroperacji+1
+
+wb.save('paczka_testowa_anonimizowana.xlsx')
+#--KONIEC SKRYPTU
+         
