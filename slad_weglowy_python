@@ -1,8 +1,6 @@
-#pomocne linki: 
-#https://medium.com/how-to-use-google-distance-matrix-api-in-python/how-to-use-google-distance-matrix-api-in-python-ef9cd895303c
-
-#w pierwszej kolejnosci -> jezeli nie ma modułu googlemaps >> nalezy zainstalowac!!
+#w pierwszej kolejnosci -> jezeli nie posiadamy zainstalowanego modułu googlemaps nalezy go  zainstalowac:
 #!pip install googlemaps
+
 
 #-------------------------Biblioteki: 
 import openpyxl
@@ -11,20 +9,19 @@ import googlemaps
 from datetime import datetime 
 import requests, json
 
-#-------------------------Ustawienia Google Maps: 
+#-------------------------Ustawienie zmiennej i klucz Google Maps: 
 #parametr API KEY:
-#API KEY jest dostępny w ramach usługi Google Cloud i wymaga pobrania API KEY do uruchominia skryptu!!!
+#API KEY jest dostępny w ramach usługi Google Cloud i wymaga pobrania API KEY do uruchominia skryptu
 gmaps_client = googlemaps.Client(key = 'TUTAJ KOD KLUCZA GOOGLE MAPS')
 
-
 #-------------------------Praca na pliku: 
-#Otworzenie pliku excela z danymi:
+#Otworzenie przykładowego pliku excela z danymi:
 wb = openpyxl.load_workbook('dane_slad_weglowy.xlsx')
 ws = wb['Arkusz1']
 
 #testowanie działania i odczytywanie liczby wierszy i kolumn: 
 print('Liczba wierszy: ' + str(ws.max_row)+' i liczba kolumn: ' + str(ws.max_column))
-#odczytywanie kolejnych pól: 
+#sprawdzenie / odczytywanie danego pola z pliku: 
 #print('Wartosc w polu A1 jest: ' + ws['A1'].value)
 row_limit = ws.max_row
 column_limit = ws.max_column
@@ -51,7 +48,7 @@ km_time_taken = ""
 #KILOMETRY_AUTO = 9
 #CZAS_AUTO = 10
 
-#-------------------------Pętla wykonawcza:  #range (0, row_limit):
+#-------------------------Pętla wykonawcza zamiast range(0, row_limit):
 for x in ws: 
     adres_od = ws.cell(row=nroperacji, column = 3).value
     adres_do = ws.cell(row=nroperacji, column = 4).value
@@ -88,5 +85,4 @@ for x in ws:
     nroperacji = nroperacji+1
 
 wb.save('paczka_testowa_anonimizowana.xlsx')
-#--KONIEC SKRYPTU
-         
+#--KONIEC SKRYPTU    
